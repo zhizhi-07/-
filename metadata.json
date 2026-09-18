@@ -1,0 +1,6 @@
+{
+  "name": "NovelAI V5 画师串生成器",
+  "description": "可视化 NovelAI V5 画师串生成与调优工具，支持多槽位角色分工、预设风格模式、黑名单过滤与真实 API 生成测试。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
