@@ -50,9 +50,9 @@ export const CharacterReferenceSection: React.FC<CharacterReferenceSectionProps>
     onUpdateCharacterData({
       imageUrl,
       name: file.name,
-      useForI2I: true,
-      strength: 0.45,
-      noise: 0.05,
+      useForI2I: false,
+      strength: 0.65,
+      noise: 0.0,
       file,
     });
   };
@@ -119,7 +119,7 @@ export const CharacterReferenceSection: React.FC<CharacterReferenceSectionProps>
           <div>
             <p className="text-xs font-medium text-white">点击或拖拽上传人物原画 / 设定图</p>
             <p className="text-[10px] text-[#8E8E93] mt-0.5">
-              上传后默认作为人物图参与 Image-to-Image 生成，也可读取图片内置 Prompt
+              支持一键解析该图 Prompt、提取人物外貌标签，或作为垫图 i2i 生成
             </p>
           </div>
         </div>
@@ -176,7 +176,7 @@ export const CharacterReferenceSection: React.FC<CharacterReferenceSectionProps>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Sliders className="w-3.5 h-3.5 text-[#0A84FF]" />
-                <span className="text-xs font-medium text-white">使用人物图生成 (Image-to-Image)</span>
+                <span className="text-xs font-medium text-white">作为垫图生成 (Image-to-Image)</span>
               </div>
 
               {/* iOS Switch */}
@@ -212,9 +212,6 @@ export const CharacterReferenceSection: React.FC<CharacterReferenceSectionProps>
                   <span className="text-[#8E8E93]">重绘幅度 (Strength)</span>
                   <span className="text-[#0A84FF] font-mono font-semibold">{characterData.strength.toFixed(2)}</span>
                 </div>
-                <p className="text-[10px] text-[#8E8E93]">
-                  已启用：Strength 越低越贴近人物原图；Noise 建议保持较低以减少伪影。
-                </p>
                 <input
                   type="range"
                   min="0.1"
@@ -232,26 +229,8 @@ export const CharacterReferenceSection: React.FC<CharacterReferenceSectionProps>
                 <div className="flex justify-between text-[9px] text-[#636366]">
                   <span>0.2 保原图姿态</span>
                   <span>0.65 标准平衡</span>
-                  <span>0.9 强重绘</span>
+                  <span>0.9 强画师重绘</span>
                 </div>
-                <div className="flex items-center justify-between text-[11px] pt-1">
-                  <span className="text-[#8E8E93]">细节噪声 (Noise)</span>
-                  <span className="text-[#0A84FF] font-mono font-semibold">{characterData.noise.toFixed(2)}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="0.4"
-                  step="0.05"
-                  value={characterData.noise}
-                  onChange={(e) =>
-                    onUpdateCharacterData({
-                      ...characterData,
-                      noise: parseFloat(e.target.value),
-                    })
-                  }
-                  className="w-full accent-[#007AFF] cursor-pointer"
-                />
               </div>
             )}
           </div>

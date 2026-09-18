@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArtistSlot, PresetMode } from '../types';
+import { ArtistSlot, PresetMode, SavedArtist } from '../types';
 import { ArtistPrefixStyle } from '../utils/promptBuilder';
 import {
   Sparkles,
@@ -12,6 +12,10 @@ import {
   Wand2,
   ChevronDown,
   HelpCircle,
+  UserRound,
+  PlayCircle,
+  Bookmark,
+  X,
 } from 'lucide-react';
 
 interface ArtistSlotsSectionProps {
@@ -29,7 +33,12 @@ interface ArtistSlotsSectionProps {
   onAddSlotToBlacklist: (name: string) => void;
   onAddCustomSlot: () => void;
   onRemoveCustomSlot: (id: string) => void;
+  onSaveArtist: (slot: ArtistSlot) => void;
+  onTestSlot: (slot: ArtistSlot) => void;
   onOpenParser?: () => void;
+  savedArtists: SavedArtist[];
+  onUseSavedArtist: (artist: SavedArtist) => void;
+  onDeleteSavedArtist: (id: string) => void;
 }
 
 const AVAILABLE_ROLES = [
@@ -58,7 +67,12 @@ export const ArtistSlotsSection: React.FC<ArtistSlotsSectionProps> = ({
   onAddSlotToBlacklist,
   onAddCustomSlot,
   onRemoveCustomSlot,
+  onSaveArtist,
+  onTestSlot,
   onOpenParser,
+  savedArtists,
+  onUseSavedArtist,
+  onDeleteSavedArtist,
 }) => {
   const [showLogicExplanation, setShowLogicExplanation] = useState(false);
 
@@ -300,6 +314,27 @@ export const ArtistSlotsSection: React.FC<ArtistSlotsSectionProps> = ({
                   )}
 
                   {slot.name.trim() && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onSaveArtist(slot)}
+                        className="p-1.5 rounded-lg text-[#8E8E93] hover:text-[#30D158] hover:bg-[#2C2C2E] transition-colors cursor-pointer"
+                        title="保存到画师库"
+                      >
+                        <Bookmark className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onTestSlot(slot)}
+                        className="p-1.5 rounded-lg text-[#8E8E93] hover:text-[#0A84FF] hover:bg-[#2C2C2E] transition-colors cursor-pointer"
+                        title="只用这个画师单独生图"
+                      >
+                        <PlayCircle className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+
+                  {slot.name.trim() && (
                     <button
                       id={`btn-blacklist-${slot.id}`}
                       type="button"
@@ -382,6 +417,47 @@ export const ArtistSlotsSection: React.FC<ArtistSlotsSectionProps> = ({
             </div>
           );
         })}
+      </div>
+
+      {/* Saved Artist Library */}
+      <div className="bg-[#1C1C1E] border border-white/10 rounded-2xl p-4 space-y-3 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <UserRound className="w-4 h-4 text-[#0A84FF]" />
+            <span className="text-xs font-semibold text-white">画师库</span>
+          </div>
+          <span className="text-[10px] text-[#8E8E93]">点击头像快速填入</span>
+        </div>
+        {savedArtists.length === 0 ? (
+          <p className="text-[11px] text-[#636366]">在画师槽位右上角点击书签，即可保存常用画师。</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            {savedArtists.map((artist) => (
+              <div key={artist.id} className="group flex items-center gap-2 p-2 rounded-xl bg-[#2C2C2E] border border-white/5">
+                <button
+                  type="button"
+                  onClick={() => onUseSavedArtist(artist)}
+                  className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[#007AFF] to-[#5856D6] text-white font-bold text-sm flex items-center justify-center cursor-pointer"
+                  title={`填入 ${artist.name}`}
+                >
+                  {artist.name.slice(0, 1).toUpperCase()}
+                </button>
+                <button type="button" onClick={() => onUseSavedArtist(artist)} className="min-w-0 flex-1 text-left cursor-pointer">
+                  <div className="text-xs text-white truncate">{artist.name}</div>
+                  <div className="text-[10px] text-[#8E8E93]">权重 {artist.weight.toFixed(2)} · 快速填入</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDeleteSavedArtist(artist.id)}
+                  className="p-1 text-[#636366] hover:text-[#FF453A] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  title="从画师库删除"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

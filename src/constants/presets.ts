@@ -43,6 +43,135 @@ export const INITIAL_SLOTS: ArtistSlot[] = [
   },
 ];
 
+export const PRESET_MODES: Record<string, never> = {};
+/*
+  clean: {
+    id: 'clean',
+    name: '干净模式',
+    tagline: '清爽线条 · 柔和纯净',
+    description: '线条清晰纤巧，色彩通透柔和，适合插画与唯美人像',
+    weights: {
+      main: 1.15,
+      coloring: 0.8,
+      lineart: 0.35,
+      lighting: 0.4,
+    },
+    styleTags: 'clean lineart, delicate lineart, soft coloring, medium complexity, simple background',
+  },
+  rich: {
+    id: 'rich',
+    name: '浓郁模式',
+    tagline: '厚涂层次 · 戏剧光影',
+    description: '色彩饱满厚重，层次丰富，具有较强光影对比与视觉冲击',
+    weights: {
+      main: 1.45,
+      coloring: 1.0,
+      lineart: 0.55,
+      lighting: 0.7,
+    },
+    styleTags: 'high complexity, depthness, detailed background, rich colors, dramatic lighting',
+  },
+  conservative: {
+    id: 'conservative',
+    name: '保守模式',
+    tagline: '低权防炸 · 稳定保底',
+    description: '保守权重组合，防止线条杂乱或色彩溢出，适合调试新画师',
+    weights: {
+      main: 1.0,
+      coloring: 0.6,
+      lineart: 0.2,
+      lighting: 0.25,
+    },
+    styleTags: 'clean lineart, soft coloring, simple background',
+  },
+  sketch: {
+    id: 'sketch',
+    name: '速写线稿',
+    tagline: '黑白线稿 · 速写阴影',
+    description: '强控黑白线稿轮廓与素描阴影结构，适合黑白速写与草图线稿',
+    weights: {
+      main: 1.8,
+      coloring: 0.9,
+      lineart: 1.6,
+      lighting: 1.5,
+    },
+    styleTags: 'clean rough sketch, simple black line art, subtl grey shading',
+  },
+}; */
+
+/* export const SKETCH_7_ARTISTS_SLOTS: ArtistSlot[] = [
+  {
+    id: 'slot-1',
+    slotKey: '1',
+    role: 'main',
+    roleLabel: '画师 1',
+    description: '主风格骨架 (1.80)',
+    name: 'juumou_(c5buf)',
+    weight: 1.8,
+    enabled: true,
+  },
+  {
+    id: 'slot-2',
+    slotKey: '2',
+    role: 'coloring',
+    roleLabel: '画师 2',
+    description: '辅助层次 (0.90)',
+    name: 'guigui_rongrong',
+    weight: 0.9,
+    enabled: true,
+  },
+  {
+    id: 'slot-3',
+    slotKey: '3',
+    role: 'lineart',
+    roleLabel: '画师 3',
+    description: '线稿控制 (0.80)',
+    name: 'wuyu16',
+    weight: 0.8,
+    enabled: true,
+  },
+  {
+    id: 'slot-4',
+    slotKey: '4',
+    role: 'lighting',
+    roleLabel: '画师 4',
+    description: '光影细节 (1.60)',
+    name: 'luckyboysquad',
+    weight: 1.6,
+    enabled: true,
+  },
+  {
+    id: 'slot-5',
+    slotKey: '5',
+    role: 'custom',
+    roleLabel: '画师 5',
+    description: '素描调味 (0.60)',
+    name: 'honnryou_hanaru',
+    weight: 0.6,
+    enabled: true,
+  },
+  {
+    id: 'slot-6',
+    slotKey: '6',
+    role: 'custom',
+    roleLabel: '画师 6',
+    description: '质感结构 (1.10)',
+    name: 'suzumi_(ccroquette)',
+    weight: 1.1,
+    enabled: true,
+  },
+  {
+    id: 'slot-7',
+    slotKey: '7',
+    role: 'custom',
+    roleLabel: '画师 7',
+    description: '笔触造型 (1.50)',
+    name: 'rourow',
+    weight: 1.5,
+    enabled: true,
+  },
+]; */
+
 export const DEFAULT_QUALITY_PREFIX =
   'masterpiece, best quality, amazing quality, year 2025, year 2026, no text,';
 
@@ -57,17 +186,22 @@ export const DEFAULT_REPLACEMENT_TAGS =
   'clean lineart, crisp lineart, thin lineart, delicate lineart, refined lineart';
 
 export const AVAILABLE_MODELS = [
-  { id: 'nai-diffusion-5-full', label: 'NovelAI V5 Full (推荐)', desc: '最新旗舰完整模型，色彩与构图表现最强' },
+  { id: 'nai-diffusion-5-full', label: 'NAI 5 Full（最新，无过滤）', desc: 'NovelAI V5 完整模型' },
   { id: 'nai-diffusion-5-curated', label: 'NovelAI V5 Curated', desc: '精选训练集，风格更受控' },
   { id: 'nai-diffusion-4-full', label: 'NovelAI V4 Full', desc: '经典 V4 旗舰模型' },
 ];
 
 export const AVAILABLE_SAMPLERS = [
-  { id: 'k_euler_ancestral', label: 'Euler Ancestral (官网推荐)' },
-  { id: 'k_dpmpp_2m', label: 'DPM++ 2M (官网推荐)' },
   { id: 'k_euler', label: 'Euler' },
+  { id: 'k_euler_ancestral', label: 'Euler Ancestral' },
+  { id: 'k_dpmpp_2m', label: 'DPM++ 2M' },
   { id: 'k_dpmpp_sde', label: 'DPM++ SDE' },
   { id: 'ddim', label: 'DDIM' },
+];
+
+export const AVAILABLE_NOISE_SCHEDULES = [
+  { id: 'karras', label: 'Karras (官网常用)' },
+  { id: 'native', label: 'Native' },
 ];
 
 export const RESOLUTION_PRESETS = [

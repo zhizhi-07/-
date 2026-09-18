@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { ArtistSlot, GenerationHistoryItem, GenerationParams, PresetMode } from './types';
+import { ArtistSlot, GenerationHistoryItem, GenerationParams, PresetMode, SavedArtist } from './types';
 import {
   INITIAL_SLOTS,
   DEFAULT_QUALITY_PREFIX,
@@ -24,6 +24,7 @@ const LOCAL_STORAGE_KEY_API = 'novelai_user_apikey';
 const LOCAL_STORAGE_KEY_SLOTS = 'novelai_artist_slots_v1';
 const LOCAL_STORAGE_KEY_BLACKLIST = 'novelai_artist_blacklist_v1';
 const LOCAL_STORAGE_KEY_REPLACEMENTS = 'novelai_replacement_tags_v1';
+const LOCAL_STORAGE_KEY_SAVED_ARTISTS = 'novelai_saved_artists_v1';
 
 export default function App() {
   // --- Artist Slots State ---
@@ -87,13 +88,24 @@ export default function App() {
     return {
       apiKey: savedKey,
       model: 'nai-diffusion-5-full',
-      width: 1024,
-      height: 1024,
+      width: 832,
+      height: 1216,
       steps: 28,
-      scale: 5,
-      sampler: 'k_euler_ancestral',
-      seed: null,
+      scale: 7,
+      sampler: 'k_euler',
+      noiseSchedule: 'karras',
+      rescale: 0,
+      seed: 0,
     };
+  });
+
+  const [savedArtists, setSavedArtists] = useState<SavedArtist[]>(() => {
+    try {
+      const cached = localStorage.getItem(LOCAL_STORAGE_KEY_SAVED_ARTISTS);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
   });
 
   // --- Image Generation Status & History ---
@@ -129,6 +141,14 @@ export default function App() {
       // ignore
     }
   }, [replacementTags]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY_SAVED_ARTISTS, JSON.stringify(savedArtists));
+    } catch {
+      // ignore
+    }
+  }, [savedArtists]);
 
   // Persist API Key to localStorage
   useEffect(() => {
@@ -219,6 +239,48 @@ export default function App() {
     setSlots((prev) => prev.filter((s) => s.id !== id));
   };
 
+  const handleSaveArtist = (slot: ArtistSlot) => {
+    const name = slot.name.trim();
+    if (!name) return;
+    setSavedArtists((prev) => {
+      const existing = prev.find((artist) => artist.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        return prev.map((artist) =>
+          artist.id === existing.id ? { ...artist, weight: slot.weight } : artist
+        );
+      }
+      return [...prev, { id: `artist-${Date.now()}`, name, weight: slot.weight }];
+    });
+  };
+
+  const handleUseSavedArtist = (artist: SavedArtist) => {
+    setSlots((prev) => {
+      const empty = prev.find((slot) => !slot.name.trim());
+      if (empty) {
+        return prev.map((slot) =>
+          slot.id === empty.id ? { ...slot, name: artist.name, weight: artist.weight, enabled: true } : slot
+        );
+      }
+      return [
+        ...prev,
+        {
+          id: `custom-slot-${Date.now()}`,
+          slotKey: String(prev.length + 1),
+          role: 'custom',
+          roleLabel: '自由画师',
+          description: '从画师库快速添加',
+          name: artist.name,
+          weight: artist.weight,
+          enabled: true,
+        },
+      ];
+    });
+  };
+
+  const handleDeleteSavedArtist = (id: string) => {
+    setSavedArtists((prev) => prev.filter((artist) => artist.id !== id));
+  };
+
   const scrollToApi = () => {
     apiSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
@@ -263,9 +325,9 @@ export default function App() {
       setCharacterData({
         imageUrl: data.referenceImage,
         name: '已解析图片',
-        useForI2I: true,
-        strength: 0.45,
-        noise: 0.05,
+        useForI2I: false,
+        strength: 0.65,
+        noise: 0.0,
       });
     }
   };
@@ -295,10 +357,25 @@ export default function App() {
   };
 
   // Generation Trigger Handler
-  const handleTriggerGenerate = async (simulate: boolean) => {
+  const handleTriggerGenerate = async (simulate: boolean, testSlot?: ArtistSlot) => {
     setGenerationError(null);
 
-    if (!promptResult.fullPositivePrompt.trim()) {
+    const generationPrompt = testSlot
+      ? buildPrompt({
+          slots: [testSlot],
+          activeMode: 'custom',
+          singleTestSlotId: testSlot.id,
+          useArtistPrefix,
+          prefixStyle,
+          qualityPrefix,
+          styleTags,
+          subjectPrompt,
+          blacklist,
+          replacementTags,
+        }).fullPositivePrompt
+      : promptResult.fullPositivePrompt;
+
+    if (!generationPrompt.trim()) {
       setGenerationError('正面 Prompt 不能为空，请至少启用一个有效画师或填写主体/质量词。');
       return;
     }
@@ -328,7 +405,7 @@ export default function App() {
 
       const result = await executeGeneration({
         apiKey: generationParams.apiKey.trim(),
-        prompt: promptResult.fullPositivePrompt,
+        prompt: generationPrompt,
         negativePrompt: negativePrompt,
         slots,
         params: generationParams,
@@ -348,7 +425,7 @@ export default function App() {
         id: `gen-${Date.now()}`,
         timestamp: Date.now(),
         imageUrl: result.image,
-        prompt: promptResult.fullPositivePrompt,
+        prompt: generationPrompt,
         negativePrompt: negativePrompt,
         seed: result.seed,
         model: generationParams.model,
@@ -400,7 +477,12 @@ export default function App() {
               onAddSlotToBlacklist={handleAddSlotToBlacklist}
               onAddCustomSlot={handleAddCustomSlot}
               onRemoveCustomSlot={handleRemoveCustomSlot}
+              onSaveArtist={handleSaveArtist}
+              onTestSlot={(slot) => handleTriggerGenerate(!generationParams.apiKey.trim(), slot)}
               onOpenParser={() => setIsParserModalOpen(true)}
+              savedArtists={savedArtists}
+              onUseSavedArtist={handleUseSavedArtist}
+              onDeleteSavedArtist={handleDeleteSavedArtist}
             />
 
             {/* Character Reference Section (人物图片上传与特征速填) */}

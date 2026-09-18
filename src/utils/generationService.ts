@@ -173,10 +173,7 @@ async function generateDirectNovelAiClient(
   prompt: string,
   negativePrompt: string,
   params: GenerationParams,
-  actualSeed: number,
-  initImage?: string,
-  strength = 0.65,
-  noise = 0.0
+  actualSeed: number
 ): Promise<GenerateResult> {
   const endpoint = 'https://image.novelai.net/ai/generate-image';
   const model = params.model || 'nai-diffusion-5-full';
@@ -184,14 +181,10 @@ async function generateDirectNovelAiClient(
   const isV4 = model.includes('4');
   const isV4OrV5 = isV5 || isV4;
 
-  const cleanInitImage = initImage
-    ? initImage.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '')
-    : undefined;
-
   const payload = {
     input: prompt,
     model: model,
-    action: cleanInitImage ? 'img2img' : 'generate',
+    action: 'generate',
     parameters: {
       params_version: isV5 ? 4 : isV4 ? 3 : 1,
       width: params.width || 1024,
@@ -206,17 +199,10 @@ async function generateDirectNovelAiClient(
       controlnet_strength: 1,
       legacy: false,
       add_original_image: true,
-      cfg_rescale: 0,
-      noise_schedule: 'native',
+      cfg_rescale: params.rescale !== undefined ? Number(params.rescale) : 0,
+      noise_schedule: params.noiseSchedule || 'karras',
       negative_prompt: negativePrompt || '',
       seed: actualSeed,
-      ...(cleanInitImage
-        ? {
-            image: cleanInitImage,
-            strength: Number(strength),
-            noise: Number(noise),
-          }
-        : {}),
       ...(isV4OrV5
         ? {
             characterPrompts: [],
@@ -358,6 +344,8 @@ export async function executeGeneration(options: GenerateOptions): Promise<Gener
         steps: params.steps,
         scale: params.scale,
         sampler: params.sampler,
+        noiseSchedule: params.noiseSchedule,
+        rescale: params.rescale,
         model: params.model,
         seed: actualSeed,
         simulate: false,
@@ -401,10 +389,7 @@ export async function executeGeneration(options: GenerateOptions): Promise<Gener
           prompt,
           negativePrompt,
           params,
-          actualSeed,
-          initImage,
-          strength,
-          noise
+          actualSeed
         );
         return directResult;
       } catch (directErr: any) {
@@ -443,10 +428,7 @@ export async function executeGeneration(options: GenerateOptions): Promise<Gener
         prompt,
         negativePrompt,
         params,
-        actualSeed,
-        initImage,
-        strength,
-        noise
+        actualSeed
       );
       return directResult;
     } catch (directErr: any) {

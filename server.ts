@@ -32,6 +32,8 @@ interface GenerateRequestBody {
   steps?: number;
   scale?: number;
   sampler?: string;
+  noiseSchedule?: string;
+  rescale?: number;
   model?: string;
   seed?: number;
   simulate?: boolean;
@@ -128,9 +130,9 @@ async function generateWithNovelAI(body: GenerateRequestBody): Promise<{
     action: cleanInitImage ? "img2img" : "generate",
     parameters: {
       params_version: isV5 ? 4 : isV4 ? 3 : 1,
-      width: body.width || 1024,
-      height: body.height || 1024,
-      scale: body.scale !== undefined ? Number(body.scale) : 5,
+      width: body.width || 832,
+      height: body.height || 1216,
+      scale: body.scale !== undefined ? Number(body.scale) : 7,
       sampler: body.sampler || "k_euler",
       steps: body.steps || 28,
       n_samples: 1,
@@ -140,8 +142,8 @@ async function generateWithNovelAI(body: GenerateRequestBody): Promise<{
       controlnet_strength: 1,
       legacy: false,
       add_original_image: true,
-      cfg_rescale: 0,
-      noise_schedule: "native",
+      cfg_rescale: body.rescale !== undefined ? Number(body.rescale) : 0,
+      noise_schedule: body.noiseSchedule || "karras",
       negative_prompt: body.negativePrompt || "",
       seed: actualSeed,
       ...(cleanInitImage

@@ -5,8 +5,6 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    // GitHub Pages serves this repository under /-/ rather than the domain root.
-    base: '/-/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

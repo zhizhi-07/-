@@ -16,6 +16,7 @@ import { GenerationParams } from '../types';
 import {
   AVAILABLE_MODELS,
   AVAILABLE_SAMPLERS,
+  AVAILABLE_NOISE_SCHEDULES,
   RESOLUTION_PRESETS,
 } from '../constants/presets';
 
@@ -226,6 +227,39 @@ export const ApiSettingsSection: React.FC<ApiSettingsSectionProps> = ({
               </option>
             ))}
           </select>
+        </div>
+
+        {/* Noise schedule & CFG rescale */}
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <div className="space-y-1.5">
+            <label htmlFor="select-noise-schedule" className="text-xs text-[#8E8E93]">噪声表</label>
+            <select
+              id="select-noise-schedule"
+              value={params.noiseSchedule || 'karras'}
+              onChange={(e) => onChangeParams({ noiseSchedule: e.target.value })}
+              className="w-full px-2 py-2 bg-[#2C2C2E] border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#007AFF] cursor-pointer"
+            >
+              {AVAILABLE_NOISE_SCHEDULES.map((schedule) => (
+                <option key={schedule.id} value={schedule.id}>{schedule.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label htmlFor="slider-rescale" className="text-xs text-[#8E8E93]">Rescale</label>
+              <span className="text-xs font-mono text-white">{params.rescale ?? 0}</span>
+            </div>
+            <input
+              id="slider-rescale"
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={params.rescale ?? 0}
+              onChange={(e) => onChangeParams({ rescale: parseFloat(e.target.value) || 0 })}
+              className="w-full accent-[#007AFF] h-1.5 bg-[#3A3A3C] rounded-lg cursor-pointer"
+            />
+          </div>
         </div>
 
         {/* Seed */}

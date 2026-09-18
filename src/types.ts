@@ -13,6 +13,13 @@ export interface ArtistSlot {
   enabled: boolean;
 }
 
+export interface SavedArtist {
+  id: string;
+  name: string;
+  weight: number;
+  note?: string;
+}
+
 export type PresetMode = 'single' | 'custom';
 
 export interface PresetConfig {
@@ -37,6 +44,8 @@ export interface GenerationParams {
   steps: number;
   scale: number;
   sampler: string;
+  noiseSchedule?: string;
+  rescale?: number;
   seed?: number | null;
 }
 
